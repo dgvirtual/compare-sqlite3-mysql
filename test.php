@@ -22,11 +22,23 @@ $mysql_database = 'persons';
 $mysql_db = new mysqli($mysql_host, $mysql_user, $mysql_password, $mysql_database, '3306');
 
 // Search string
-$search_term = 'įmonė';
+$search_term = (isset($argv[1]) && is_string($argv[1])) ? $argv[1] : 'įmonė';
+
 
 // **Benchmarking the search**
 
-$iterations = 10; // Number of times to run the search for each database
+// Number of times to run the search for each database
+// defaults to 10
+$iterations = (isset($argv[2]) && is_numeric($argv[2])) ? $argv[2] : 10;
+
+// prevent iterations zero
+if ($iterations === 0) {
+  echo "No iterations specified, exiting..." . PHP_EOL;
+} elseif ($iterations > 30 && $iterations <= 100) {
+  echo "Looping over $iterations iterations will take some time..." . PHP_EOL;
+} elseif ($iterations > 100) {
+  echo "Looping over $iterations iterations will take forever, exiting..." . PHP_EOL;
+}
 
 // **SQLite3 Search**
 
@@ -70,8 +82,11 @@ $end_time_mysql = microtime(true);
 $sqlite_time = $end_time_sqlite - $start_time_sqlite;
 $mysql_time = $end_time_mysql - $start_time_mysql;
 
-echo "SQLite search time: " . $sqlite_time . " seconds\n";
-echo "MySQL search time: " . $mysql_time . " seconds\n";
+echo "Iterations: " . $iterations . PHP_EOL;
+echo "Search term: " . $search_term . PHP_EOL;
+echo "Search time averages: \n";
+echo "SQLite: " . $sqlite_time / $iterations . " seconds\n";
+echo "MySQL: " . $mysql_time  / $iterations . " seconds\n";
 
 // Close connections
 $sqlite_db->close();
